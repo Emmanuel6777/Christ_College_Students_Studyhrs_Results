@@ -1,25 +1,48 @@
 import streamlit as st
-import joblib
 import pandas as pd
+import joblib
 
-model = joblib.load("student_studyhrs_withatt_model.pkl")
+model = joblib.load("Price_Model.pkl")
+st.title("House Price Prediction")
 
-st.title("Student Pass/Fail Based on study Hours")
+area = st.number_input(
+    "Enter the area in sq_ft",
+    min_value=0.0,
+    max_value=10000.0,
+    value=610.0
+)
 
-hours=st.number_input("Enter study hours",min_value=0.0,max_value=15.0,value=5.0)
-attendance=st.number_input("Enter attendance hours",min_value=0.0,max_value=100.0,value=75.0)
+bedroom = st.number_input(
+    "Enter the number of bedrooms",
+    min_value=0.0,
+    max_value=20.0,
+    value=2.0
+)
 
-input_data=pd.DataFrame({
-  "StudyHours":[hours],
-  "Attendance":[attendance]
-})
+floor = st.number_input(
+    "Enter the floor number",
+    min_value=0.0,
+    max_value=20.0,
+    value=2.0
+)
+
 if st.button("Predict"):
-  prediction = model.predict(input_data)
-  prob=model.predict_proba(input_data)
-  predictedpass=prob[0][1]
-  if prediction[0]==1:
-    st.success("PASS")
-  else:
-    st.error("FAIL")
-  st.write("Pass Probablity:",predictedpass*100,"%")
-                      
+    valid = True
+    if area < 600 or area > 3000:
+        st.error("Area should be between 600 and 3000 sq ft")
+        valid = False
+    if bedroom < 1 or bedroom > 4:
+        st.error("Number of bedrooms should be between 1 and 4")
+        valid = False
+    if floor < 0 or floor > 10:
+        st.error("Floor number should be between 0 and 10")
+        valid = False
+    if valid:
+        input_data = pd.DataFrame({
+            "Area": [area],
+            "Bedrooms": [bedroom],
+            "Floor": [floor]
+        })
+        prediction = model.predict(input_data)
+        pred = prediction[0]
+        st.success(f"Predicted Price: ₹{pred:.2f} Lakhs")
